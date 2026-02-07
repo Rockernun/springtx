@@ -32,10 +32,12 @@ public class TxBasicTest {
         basicService.tx();
         basicService.nonTx();
         /**
-         * 2026-02-07T14:41:34.735+09:00  INFO 40055 --- [springtx] [    Test worker] h.s.apply.TxBasicTest$BasicService       : Call Transaction...
-         * 2026-02-07T14:41:34.735+09:00  INFO 40055 --- [springtx] [    Test worker] h.s.apply.TxBasicTest$BasicService       : Transaction Active: true
-         * 2026-02-07T14:41:34.737+09:00  INFO 40055 --- [springtx] [    Test worker] h.s.apply.TxBasicTest$BasicService       : Call Non-Transaction...
-         * 2026-02-07T14:41:34.737+09:00  INFO 40055 --- [springtx] [    Test worker] h.s.apply.TxBasicTest$BasicService       : Transaction Active: false
+         * 2026-02-07T14:52:45.301+09:00 TRACE 54148 --- [springtx] [    Test worker] o.s.t.i.TransactionInterceptor           : Getting transaction for [hello.springtx.apply.TxBasicTest$BasicService.tx]
+         * 2026-02-07T14:52:45.301+09:00  INFO 54148 --- [springtx] [    Test worker] h.s.apply.TxBasicTest$BasicService       : Call Transaction...
+         * 2026-02-07T14:52:45.301+09:00  INFO 54148 --- [springtx] [    Test worker] h.s.apply.TxBasicTest$BasicService       : Transaction Active: true
+         * 2026-02-07T14:52:45.301+09:00 TRACE 54148 --- [springtx] [    Test worker] o.s.t.i.TransactionInterceptor           : Completing transaction for [hello.springtx.apply.TxBasicTest$BasicService.tx]
+         * 2026-02-07T14:52:45.302+09:00  INFO 54148 --- [springtx] [    Test worker] h.s.apply.TxBasicTest$BasicService       : Call Non-Transaction...
+         * 2026-02-07T14:52:45.303+09:00  INFO 54148 --- [springtx] [    Test worker] h.s.apply.TxBasicTest$BasicService       : Transaction Active: false
          */
     }
 
