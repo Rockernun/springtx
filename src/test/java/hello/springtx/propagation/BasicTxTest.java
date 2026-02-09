@@ -99,4 +99,29 @@ public class BasicTxTest {
          * hello.springtx.propagation.BasicTxTest   : Transaction2 Rollback!
          */
     }
+
+    @Test
+    void inner_commit() {
+        log.info("Outer Transaction Start...");
+        TransactionStatus outerTx = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        log.info("outerTx.isNewTransaction()={}", outerTx.isNewTransaction());
+
+        log.info("Inner Transaction Start...");
+        TransactionStatus innerTx = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        log.info("innerTx.isNewTransaction()={}", innerTx.isNewTransaction());
+        log.info("Inner Transaction Committed!");
+        transactionManager.commit(innerTx);
+
+        log.info("Outer Transaction Committed!");
+        transactionManager.commit(outerTx);
+
+        /**
+         * hello.springtx.propagation.BasicTxTest   : outerTx.isNewTransaction()=true
+         * hello.springtx.propagation.BasicTxTest   : Inner Transaction Start...
+         * o.s.j.d.DataSourceTransactionManager     : Participating in existing transaction
+         * hello.springtx.propagation.BasicTxTest   : innerTx.isNewTransaction()=false
+         * hello.springtx.propagation.BasicTxTest   : Inner Transaction Committed!
+         * hello.springtx.propagation.BasicTxTest   : Outer Transaction Committed!
+         */
+    }
 }
