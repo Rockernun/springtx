@@ -76,4 +76,27 @@ public class BasicTxTest {
          * o.s.j.d.DataSourceTransactionManager     : Releasing JDBC Connection [HikariProxyConnection@110041993 wrapping conn0: url=jdbc:h2:mem:0caf0047-403b-4f2c-bb88-f5a5a10f0c9a user=SA] after transaction
          */
     }
+
+    @Test
+    void double_commit_rollback() {
+        log.info("Transaction1 Start...");
+        TransactionStatus transaction1 = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        log.info("Transaction1 Committed!");
+        transactionManager.commit(transaction1);
+
+        log.info("Transaction2 Start...");
+        TransactionStatus transaction2 = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        log.info("Transaction2 Rollback!");
+        transactionManager.rollback(transaction2);
+
+        /**
+         * o.s.j.d.DataSourceTransactionManager     : Acquired Connection [HikariProxyConnection@2130422201 wrapping conn0: url=jdbc:h2:mem:b675ecf7-4c8a-4e8b-bf66-e11b39fc89b2 user=SA] for JDBC transaction
+         * o.s.j.d.DataSourceTransactionManager     : Switching JDBC Connection [HikariProxyConnection@2130422201 wrapping conn0: url=jdbc:h2:mem:b675ecf7-4c8a-4e8b-bf66-e11b39fc89b2 user=SA] to manual commit
+         * hello.springtx.propagation.BasicTxTest   : Transaction1 Committed!
+         *
+         * o.s.j.d.DataSourceTransactionManager     : Acquired Connection [HikariProxyConnection@643565394 wrapping conn0: url=jdbc:h2:mem:b675ecf7-4c8a-4e8b-bf66-e11b39fc89b2 user=SA] for JDBC transaction
+         * o.s.j.d.DataSourceTransactionManager     : Switching JDBC Connection [HikariProxyConnection@643565394 wrapping conn0: url=jdbc:h2:mem:b675ecf7-4c8a-4e8b-bf66-e11b39fc89b2 user=SA] to manual commit
+         * hello.springtx.propagation.BasicTxTest   : Transaction2 Rollback!
+         */
+    }
 }
