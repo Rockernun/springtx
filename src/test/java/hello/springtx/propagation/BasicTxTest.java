@@ -43,4 +43,37 @@ public class BasicTxTest {
         transactionManager.rollback(status);
         log.info("Transaction successfully Rollback!");
     }
+
+    @Test
+    void double_commit() {
+        log.info("Transaction1 Start...");
+        TransactionStatus transaction1 = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        log.info("Transaction1 Committed!");
+        transactionManager.commit(transaction1);
+
+        log.info("Transaction2 Start...");
+        TransactionStatus transaction2 = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        log.info("Transaction2 Committed!");
+        transactionManager.commit(transaction2);
+
+        /**
+         * hello.springtx.propagation.BasicTxTest   : Transaction1 Start...
+         * o.s.j.d.DataSourceTransactionManager     : Creating new transaction with name [null]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+         * o.s.j.d.DataSourceTransactionManager     : Acquired Connection [HikariProxyConnection@1585654158 wrapping conn0: url=jdbc:h2:mem:0caf0047-403b-4f2c-bb88-f5a5a10f0c9a user=SA] for JDBC transaction
+         * o.s.j.d.DataSourceTransactionManager     : Switching JDBC Connection [HikariProxyConnection@1585654158 wrapping conn0: url=jdbc:h2:mem:0caf0047-403b-4f2c-bb88-f5a5a10f0c9a user=SA] to manual commit
+         * hello.springtx.propagation.BasicTxTest   : Transaction1 Committed!
+         * o.s.j.d.DataSourceTransactionManager     : Initiating transaction commit
+         * o.s.j.d.DataSourceTransactionManager     : Committing JDBC transaction on Connection [HikariProxyConnection@1585654158 wrapping conn0: url=jdbc:h2:mem:0caf0047-403b-4f2c-bb88-f5a5a10f0c9a user=SA]
+         * o.s.j.d.DataSourceTransactionManager     : Releasing JDBC Connection [HikariProxyConnection@1585654158 wrapping conn0: url=jdbc:h2:mem:0caf0047-403b-4f2c-bb88-f5a5a10f0c9a user=SA] after transaction
+         *
+         * hello.springtx.propagation.BasicTxTest   : Transaction2 Start...
+         * o.s.j.d.DataSourceTransactionManager     : Creating new transaction with name [null]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+         * o.s.j.d.DataSourceTransactionManager     : Acquired Connection [HikariProxyConnection@110041993 wrapping conn0: url=jdbc:h2:mem:0caf0047-403b-4f2c-bb88-f5a5a10f0c9a user=SA] for JDBC transaction
+         * o.s.j.d.DataSourceTransactionManager     : Switching JDBC Connection [HikariProxyConnection@110041993 wrapping conn0: url=jdbc:h2:mem:0caf0047-403b-4f2c-bb88-f5a5a10f0c9a user=SA] to manual commit
+         * hello.springtx.propagation.BasicTxTest   : Transaction2 Committed!
+         * o.s.j.d.DataSourceTransactionManager     : Initiating transaction commit
+         * o.s.j.d.DataSourceTransactionManager     : Committing JDBC transaction on Connection [HikariProxyConnection@110041993 wrapping conn0: url=jdbc:h2:mem:0caf0047-403b-4f2c-bb88-f5a5a10f0c9a user=SA]
+         * o.s.j.d.DataSourceTransactionManager     : Releasing JDBC Connection [HikariProxyConnection@110041993 wrapping conn0: url=jdbc:h2:mem:0caf0047-403b-4f2c-bb88-f5a5a10f0c9a user=SA] after transaction
+         */
+    }
 }
