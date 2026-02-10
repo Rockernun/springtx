@@ -10,8 +10,10 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.UnexpectedRollbackException;
+import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 @Slf4j
@@ -181,6 +183,47 @@ public class BasicTxTest {
          * o.s.j.d.DataSourceTransactionManager     : Global transaction is marked as rollback-only but transactional code requested commit <-- rollback-only로 설정했는데 외부 트랜잭션 커밋 시도(불가능)
          * o.s.j.d.DataSourceTransactionManager     : Initiating transaction rollback
          * o.s.j.d.DataSourceTransactionManager     : Rolling back JDBC transaction on Connection [HikariProxyConnection@219665748 wrapping conn0: url=jdbc:h2:mem:02ab0ac9-d4a9-46f7-8722-cfe4812927d0 user=SA]
+         */
+    }
+
+    @Test
+    void inner_rollback_requires_now() {
+        log.info("Outer Transaction Start...");
+        TransactionStatus outerTx = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        log.info("outerTx.isNewTransaction()={}", outerTx.isNewTransaction());
+
+        log.info("Inner Transaction Start...");
+        DefaultTransactionAttribute definition = new DefaultTransactionAttribute();
+        definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        TransactionStatus innerTx = transactionManager.getTransaction(definition);
+        log.info("innerTx.isNewTransaction()={}", innerTx.isNewTransaction());
+
+        log.info("Inner Transaction Rollback!");
+        transactionManager.rollback(innerTx);
+
+        log.info("Outer Transaction Committed!");
+        transactionManager.commit(outerTx);
+
+        /**
+         * hello.springtx.propagation.BasicTxTest   : Outer Transaction Start...
+         * o.s.j.d.DataSourceTransactionManager     : Creating new transaction with name [null]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+         * o.s.j.d.DataSourceTransactionManager     : Acquired Connection [HikariProxyConnection@521961438 wrapping conn0: url=jdbc:h2:mem:15e1fb0c-47cb-4d61-bd8d-383c48ffcc0d user=SA] for JDBC transaction
+         * o.s.j.d.DataSourceTransactionManager     : Switching JDBC Connection [HikariProxyConnection@521961438 wrapping conn0: url=jdbc:h2:mem:15e1fb0c-47cb-4d61-bd8d-383c48ffcc0d user=SA] to manual commit
+         * hello.springtx.propagation.BasicTxTest   : outerTx.isNewTransaction()=true
+         * hello.springtx.propagation.BasicTxTest   : Inner Transaction Start...
+         * o.s.j.d.DataSourceTransactionManager     : Suspending current transaction, creating new transaction with name [null] <-- 기존 외부 트랜잭션은 잠시 미뤄두고 새로운 트랜잭션 생성
+         * o.s.j.d.DataSourceTransactionManager     : Acquired Connection [HikariProxyConnection@504760990 wrapping conn1: url=jdbc:h2:mem:15e1fb0c-47cb-4d61-bd8d-383c48ffcc0d user=SA] for JDBC transaction
+         * o.s.j.d.DataSourceTransactionManager     : Switching JDBC Connection [HikariProxyConnection@504760990 wrapping conn1: url=jdbc:h2:mem:15e1fb0c-47cb-4d61-bd8d-383c48ffcc0d user=SA] to manual commit
+         * hello.springtx.propagation.BasicTxTest   : innerTx.isNewTransaction()=true
+         * hello.springtx.propagation.BasicTxTest   : Inner Transaction Rollback! <-- 내부 트랜잭션은 롤백 처리
+         * o.s.j.d.DataSourceTransactionManager     : Initiating transaction rollback
+         * o.s.j.d.DataSourceTransactionManager     : Rolling back JDBC transaction on Connection [HikariProxyConnection@504760990 wrapping conn1: url=jdbc:h2:mem:15e1fb0c-47cb-4d61-bd8d-383c48ffcc0d user=SA]
+         * o.s.j.d.DataSourceTransactionManager     : Releasing JDBC Connection [HikariProxyConnection@504760990 wrapping conn1: url=jdbc:h2:mem:15e1fb0c-47cb-4d61-bd8d-383c48ffcc0d user=SA] after transaction
+         * o.s.j.d.DataSourceTransactionManager     : Resuming suspended transaction after completion of inner transaction <-- 잠시 미뤄뒀던 기존 외부 트랜잭션 계속 작업
+         * hello.springtx.propagation.BasicTxTest   : Outer Transaction Committed! <-- 외부 트랜잭션은 커밋 처리
+         * o.s.j.d.DataSourceTransactionManager     : Initiating transaction commit
+         * o.s.j.d.DataSourceTransactionManager     : Committing JDBC transaction on Connection [HikariProxyConnection@521961438 wrapping conn0: url=jdbc:h2:mem:15e1fb0c-47cb-4d61-bd8d-383c48ffcc0d user=SA]
+         * o.s.j.d.DataSourceTransactionManager     : Releasing JDBC Connection [HikariProxyConnection@521961438 wrapping conn0: url=jdbc:h2:mem:15e1fb0c-47cb-4d61-bd8d-383c48ffcc0d user=SA] after transaction
          */
     }
 }
