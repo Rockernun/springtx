@@ -147,4 +147,37 @@ public class BasicTxTest {
          * o.s.j.d.DataSourceTransactionManager     : Rolling back JDBC transaction on Connection [HikariProxyConnection@635569126 wrapping conn0: url=jdbc:h2:mem:0743c509-623e-4709-a182-e77f4c08c1d3 user=SA]
          */
     }
+
+    @Test
+    void inner_rollback() {
+        log.info("Outer Transaction Start...");
+        TransactionStatus outerTx = transactionManager.getTransaction(new DefaultTransactionDefinition());
+
+        log.info("Inner Transaction Start...");
+        TransactionStatus innerTx = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        log.info("Inner Transaction Rollback!");
+        transactionManager.rollback(innerTx);
+
+        log.info("Outer Transaction Committed!");
+        transactionManager.commit(outerTx);
+
+        /**
+         * org.springframework.transaction.UnexpectedRollbackException: Transaction rolled back because it has been marked as rollback-only
+         *
+         * 	at org.springframework.transaction.support.AbstractPlatformTransactionManager.processRollback(AbstractPlatformTransactionManager.java:938)
+         * 	at org.springframework.transaction.support.AbstractPlatformTransactionManager.commit(AbstractPlatformTransactionManager.java:754)
+         * 	at hello.springtx.propagation.BasicTxTest.inner_rollback(BasicTxTest.java:162)
+         *
+         * 	<상세 로그>
+         * 	hello.springtx.propagation.BasicTxTest   : Inner Transaction Start...
+         * o.s.j.d.DataSourceTransactionManager     : Participating in existing transaction
+         * hello.springtx.propagation.BasicTxTest   : Inner Transaction Rollback!
+         * o.s.j.d.DataSourceTransactionManager     : Participating transaction failed - marking existing transaction as rollback-only <-- 참여 중인 트랜잭션(내부 트랜잭션) 실패, 외부 트랜잭션을 rollback-only로 마킹
+         * o.s.j.d.DataSourceTransactionManager     : Setting JDBC transaction [HikariProxyConnection@219665748 wrapping conn0: url=jdbc:h2:mem:02ab0ac9-d4a9-46f7-8722-cfe4812927d0 user=SA] rollback-only
+         * hello.springtx.propagation.BasicTxTest   : Outer Transaction Committed!
+         * o.s.j.d.DataSourceTransactionManager     : Global transaction is marked as rollback-only but transactional code requested commit <-- rollback-only로 설정했는데 외부 트랜잭션 커밋 시도(불가능)
+         * o.s.j.d.DataSourceTransactionManager     : Initiating transaction rollback
+         * o.s.j.d.DataSourceTransactionManager     : Rolling back JDBC transaction on Connection [HikariProxyConnection@219665748 wrapping conn0: url=jdbc:h2:mem:02ab0ac9-d4a9-46f7-8722-cfe4812927d0 user=SA]
+         */
+    }
 }
