@@ -2,6 +2,7 @@ package hello.springtx.propagation;
 
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 @Slf4j
@@ -159,7 +161,8 @@ public class BasicTxTest {
         transactionManager.rollback(innerTx);
 
         log.info("Outer Transaction Committed!");
-        transactionManager.commit(outerTx);
+        Assertions.assertThatThrownBy(() -> transactionManager.commit(outerTx))
+                .isInstanceOf(UnexpectedRollbackException.class);
 
         /**
          * org.springframework.transaction.UnexpectedRollbackException: Transaction rolled back because it has been marked as rollback-only
