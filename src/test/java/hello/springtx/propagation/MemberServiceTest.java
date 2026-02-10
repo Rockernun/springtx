@@ -1,5 +1,7 @@
 package hello.springtx.propagation;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,7 +30,7 @@ class MemberServiceTest {
     void outerTxOff_fail() {
         String username = "로그 예외_outerTxOff_success";
 
-        org.assertj.core.api.Assertions.assertThatThrownBy(() -> memberService.joinV1(username))
+        assertThatThrownBy(() -> memberService.joinV1(username))
                 .isInstanceOf(RuntimeException.class);
         memberService.joinV2(username);
 
@@ -54,5 +56,16 @@ class MemberServiceTest {
 
         Assertions.assertTrue(memberRepository.find(username).isPresent());
         Assertions.assertTrue(logRepository.find(username).isPresent());
+    }
+
+    @Test
+    void outerTx_on_fail() {
+        String username = "로그 예외_outerTx_on_fail";
+
+        assertThatThrownBy(() -> memberService.joinV1(username))
+                .isInstanceOf(RuntimeException.class);
+
+        Assertions.assertTrue(memberRepository.find(username).isEmpty());
+        Assertions.assertTrue(logRepository.find(username).isEmpty());
     }
 }
