@@ -124,4 +124,27 @@ public class BasicTxTest {
          * hello.springtx.propagation.BasicTxTest   : Outer Transaction Committed!
          */
     }
+
+    @Test
+    void outer_rollback() {
+        log.info("Outer Transaction Start...");
+        TransactionStatus outerTx = transactionManager.getTransaction(new DefaultTransactionDefinition());
+
+        log.info("Inner Transaction Start...");
+        TransactionStatus innerTx = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        log.info("Inner Transaction Committed!");
+        transactionManager.commit(innerTx);
+
+        log.info("Outer Transaction Rollback!");
+        transactionManager.rollback(outerTx);
+
+        /**
+         * hello.springtx.propagation.BasicTxTest   : Inner Transaction Start...
+         * o.s.j.d.DataSourceTransactionManager     : Participating in existing transaction
+         * hello.springtx.propagation.BasicTxTest   : Inner Transaction Committed!
+         * hello.springtx.propagation.BasicTxTest   : Outer Transaction Rollback!
+         * o.s.j.d.DataSourceTransactionManager     : Initiating transaction rollback
+         * o.s.j.d.DataSourceTransactionManager     : Rolling back JDBC transaction on Connection [HikariProxyConnection@635569126 wrapping conn0: url=jdbc:h2:mem:0743c509-623e-4709-a182-e77f4c08c1d3 user=SA]
+         */
+    }
 }
