@@ -11,9 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class MemberServiceTest {
 
     @Autowired MemberService memberService;
-
     @Autowired MemberRepository memberRepository;
-
     @Autowired LogRepository logRepository;
 
     @Test
@@ -24,5 +22,17 @@ class MemberServiceTest {
 
         Assertions.assertTrue(memberRepository.find(username).isPresent());
         Assertions.assertTrue(logRepository.find(username).isPresent());
+    }
+
+    @Test
+    void outerTxOff_fail() {
+        String username = "로그 예외_outerTxOff_success";
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> memberService.joinV1(username))
+                .isInstanceOf(RuntimeException.class);
+        memberService.joinV2(username);
+
+        Assertions.assertTrue(memberRepository.find(username).isPresent());
+        Assertions.assertTrue(logRepository.find(username).isEmpty());
     }
 }
