@@ -13,6 +13,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final LogRepository logRepository;
 
+    @Transactional
     public void joinV1(String name) {
         Member member = new Member(name);
         Log logMessage = new Log(name);
@@ -44,5 +45,4 @@ public class MemberService {
 
         log.info("== logRepository 호출 종료 ==");
     }
-
 }
